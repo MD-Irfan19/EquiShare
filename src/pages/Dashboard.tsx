@@ -1,255 +1,322 @@
 import { useEffect, useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Plus, Users, DollarSign, Calendar } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { useToast } from '@/hooks/use-toast';
+import { Users, DollarSign, Receipt, TrendingUp } from 'lucide-react';
+import { CreateGroupDialog } from '@/components/groups/CreateGroupDialog';
+import { AddExpenseDialog } from '@/components/expenses/AddExpenseDialog';
+import { ExpensesList } from '@/components/expenses/ExpensesList';
+import { ExpenseChart } from '@/components/dashboard/ExpenseChart';
+import { CSVImportDialog } from '@/components/import/CSVImportDialog';
+import { format, subMonths } from 'date-fns';
 
-interface Group {
-  id: string;
-  name: string;
-  description: string;
-  created_at: string;
-  member_count: number;
-}
-
-interface Expense {
-  id: string;
-  amount: number;
-  description: string;
-  expense_date: string;
-  group_name: string;
-}
-
-interface Stats {
-  totalGroups: number;
-  totalExpenses: number;
-  totalAmount: number;
-}
-
-export default function Dashboard() {
-  const { user, signOut } = useAuth();
-  const { toast } = useToast();
-  const [groups, setGroups] = useState<Group[]>([]);
-  const [recentExpenses, setRecentExpenses] = useState<Expense[]>([]);
-  const [stats, setStats] = useState<Stats>({ totalGroups: 0, totalExpenses: 0, totalAmount: 0 });
+export const Dashboard = () => {
+  const { user } = useAuth();
+  const [groups, setGroups] = useState<any[]>([]);
+  const [selectedGroup, setSelectedGroup] = useState<any>(null);
+  const [groupMembers, setGroupMembers] = useState<any[]>([]);
+  const [recentExpenses, setRecentExpenses] = useState<any[]>([]);
+  const [chartData, setChartData] = useState({
+    categoryData: [],
+    monthlyData: [],
+    totalAmount: 0,
+  });
+  const [stats, setStats] = useState({
+    totalExpenses: 0,
+    groupCount: 0,
+    yourBalance: 0,
+    recentCount: 0,
+  });
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (user) {
-      fetchDashboardData();
-    }
-  }, [user]);
-
   const fetchDashboardData = async () => {
+    if (!user) return;
+
     try {
-      // Fetch user's groups
       const { data: groupsData, error: groupsError } = await supabase
-        .from('groups')
+        .from('group_members')
         .select(`
-          id,
-          name,
-          description,
-          created_at
+          groups (
+            id,
+            name,
+            description,
+            currency,
+            created_at
+          )
         `)
-        .eq('group_members.user_id', user?.id);
+        .eq('user_id', user.id);
 
       if (groupsError) throw groupsError;
 
-      // Fetch recent expenses
+      const userGroups = groupsData?.map(item => item.groups).filter(Boolean) || [];
+      setGroups(userGroups);
+
+      if (userGroups.length > 0 && !selectedGroup) {
+        setSelectedGroup(userGroups[0]);
+      }
+
+      if (userGroups.length === 0) {
+        setLoading(false);
+        return;
+      }
+
+      const groupIds = userGroups.map(g => g.id);
       const { data: expensesData, error: expensesError } = await supabase
         .from('expenses')
-        .select(`
-          id,
-          amount,
-          description,
-          expense_date,
-          groups!inner(name)
-        `)
-        .in('group_id', groupsData?.map(g => g.id) || [])
+        .select('id, amount, description, category, expense_date, paid_by, group_id')
+        .in('group_id', groupIds)
         .order('created_at', { ascending: false })
         .limit(5);
 
       if (expensesError) throw expensesError;
 
-      // Calculate stats
-      const totalGroups = groupsData?.length || 0;
-      const totalExpenses = expensesData?.length || 0;
-      const totalAmount = expensesData?.reduce((sum, exp) => sum + Number(exp.amount), 0) || 0;
+      setRecentExpenses(expensesData || []);
 
-      setGroups(groupsData?.map(g => ({ ...g, member_count: 0 })) || []);
-      setRecentExpenses(expensesData?.map(exp => ({
-        ...exp,
-        group_name: exp.groups.name
-      })) || []);
-      setStats({ totalGroups, totalExpenses, totalAmount });
-    } catch (error: any) {
-      toast({
-        title: 'Error',
-        description: 'Failed to load dashboard data',
-        variant: 'destructive'
+      const { data: allExpenses, error: statsError } = await supabase
+        .from('expenses')
+        .select('amount')
+        .in('group_id', groupIds);
+
+      if (statsError) throw statsError;
+
+      const totalExpenses = allExpenses?.reduce((sum, exp) => sum + Number(exp.amount), 0) || 0;
+
+      setStats({
+        totalExpenses,
+        groupCount: userGroups.length,
+        yourBalance: 0,
+        recentCount: expensesData?.length || 0,
       });
+
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleSignOut = async () => {
-    await signOut();
+  const fetchGroupData = async () => {
+    if (!selectedGroup) return;
+
+    try {
+      const { data: membersData, error: membersError } = await supabase
+        .from('group_members')
+        .select(`
+          user_id,
+          profiles (display_name, email)
+        `)
+        .eq('group_id', selectedGroup.id);
+
+      if (membersError) throw membersError;
+
+      const members = membersData?.map(m => ({
+        user_id: m.user_id,
+        display_name: m.profiles?.display_name || 'Unknown',
+        email: m.profiles?.email,
+      })) || [];
+
+      setGroupMembers(members);
+
+      const { data: expensesData, error: expensesError } = await supabase
+        .from('expenses')
+        .select('amount, category, expense_date')
+        .eq('group_id', selectedGroup.id)
+        .gte('expense_date', format(subMonths(new Date(), 12), 'yyyy-MM-dd'));
+
+      if (expensesError) throw expensesError;
+
+      const categoryMap = new Map();
+      expensesData?.forEach(expense => {
+        const existing = categoryMap.get(expense.category) || { amount: 0, count: 0 };
+        categoryMap.set(expense.category, {
+          category: expense.category,
+          amount: existing.amount + Number(expense.amount),
+          count: existing.count + 1,
+        });
+      });
+
+      const monthlyMap = new Map();
+      expensesData?.forEach(expense => {
+        const month = format(new Date(expense.expense_date), 'MMM yyyy');
+        const existing = monthlyMap.get(month) || 0;
+        monthlyMap.set(month, existing + Number(expense.amount));
+      });
+
+      const monthlyData = Array.from(monthlyMap.entries())
+        .map(([month, amount]) => ({ month, amount }))
+        .sort((a, b) => new Date(a.month).getTime() - new Date(b.month).getTime());
+
+      const totalAmount = expensesData?.reduce((sum, exp) => sum + Number(exp.amount), 0) || 0;
+
+      setChartData({
+        categoryData: Array.from(categoryMap.values()),
+        monthlyData,
+        totalAmount,
+      });
+
+    } catch (error) {
+      console.error('Error fetching group data:', error);
+    }
   };
 
+  useEffect(() => {
+    fetchDashboardData();
+  }, [user]);
+
+  useEffect(() => {
+    fetchGroupData();
+  }, [selectedGroup]);
+
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
-    );
+    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b bg-card">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-primary">EquiShare</h1>
-          <div className="flex items-center gap-4">
-            <span className="text-sm text-muted-foreground">
-              Welcome, {user?.email}
-            </span>
-            <Button variant="outline" onClick={handleSignOut}>
+    <div className="min-h-screen bg-background p-6 space-y-6">
+      <div className="max-w-7xl mx-auto">
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
+            <p className="text-muted-foreground mt-1">
+              Welcome back, {user?.email}
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            <CreateGroupDialog onGroupCreated={fetchDashboardData} />
+            <Button 
+              onClick={() => supabase.auth.signOut()}
+              variant="outline"
+            >
               Sign Out
             </Button>
           </div>
         </div>
-      </header>
 
-      <div className="container mx-auto px-4 py-6">
-        {/* Welcome Section */}
-        <div className="mb-8">
-          <h2 className="text-3xl font-bold mb-2">Dashboard</h2>
-          <p className="text-muted-foreground">
-            Manage your groups and track shared expenses
-          </p>
-        </div>
-
-        {/* Quick Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        {groups.length === 0 ? (
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Groups</CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.totalGroups}</div>
+            <CardContent className="p-8 text-center">
+              <Users className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+              <h3 className="text-xl font-semibold mb-2">No Groups Yet</h3>
+              <p className="text-muted-foreground mb-6">
+                Create your first group to start tracking shared expenses
+              </p>
+              <CreateGroupDialog onGroupCreated={fetchDashboardData} />
             </CardContent>
           </Card>
-          
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Recent Expenses</CardTitle>
-              <Calendar className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.totalExpenses}</div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Amount</CardTitle>
-              <DollarSign className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">${stats.totalAmount.toFixed(2)}</div>
-            </CardContent>
-          </Card>
-        </div>
+        ) : (
+          <>
+            {/* Stats Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Total Expenses</CardTitle>
+                  <DollarSign className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">${stats.totalExpenses.toFixed(2)}</div>
+                  <p className="text-xs text-muted-foreground">Across all groups</p>
+                </CardContent>
+              </Card>
 
-        {/* Quick Actions */}
-        <div className="mb-8">
-          <h3 className="text-xl font-semibold mb-4">Quick Actions</h3>
-          <div className="flex gap-4">
-            <Button asChild>
-              <Link to="/groups/new">
-                <Plus className="h-4 w-4 mr-2" />
-                Create Group
-              </Link>
-            </Button>
-            <Button variant="secondary" asChild>
-              <Link to="/groups">
-                <Users className="h-4 w-4 mr-2" />
-                View All Groups
-              </Link>
-            </Button>
-          </div>
-        </div>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Your Balance</CardTitle>
+                  <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">${stats.yourBalance.toFixed(2)}</div>
+                  <p className="text-xs text-muted-foreground">Amount you're owed</p>
+                </CardContent>
+              </Card>
 
-        {/* Recent Groups */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Your Groups</CardTitle>
-              <CardDescription>
-                Groups you're part of
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {groups.length === 0 ? (
-                <p className="text-muted-foreground text-center py-4">
-                  No groups yet. Create your first group to get started!
-                </p>
-              ) : (
-                <div className="space-y-3">
-                  {groups.slice(0, 3).map((group) => (
-                    <div key={group.id} className="flex justify-between items-center p-3 border rounded-lg">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Groups</CardTitle>
+                  <Users className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{stats.groupCount}</div>
+                  <p className="text-xs text-muted-foreground">Active groups</p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Recent Activity</CardTitle>
+                  <Receipt className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{stats.recentCount}</div>
+                  <p className="text-xs text-muted-foreground">New expenses</p>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Group Selection and Actions */}
+            {selectedGroup && (
+              <Card className="mb-6">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
                       <div>
-                        <h4 className="font-medium">{group.name}</h4>
-                        <p className="text-sm text-muted-foreground">{group.description}</p>
+                        <CardTitle>{selectedGroup.name}</CardTitle>
+                        {selectedGroup.description && (
+                          <p className="text-sm text-muted-foreground mt-1">{selectedGroup.description}</p>
+                        )}
                       </div>
-                      <Button variant="ghost" size="sm" asChild>
-                        <Link to={`/groups/${group.id}`}>View</Link>
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Recent Expenses</CardTitle>
-              <CardDescription>
-                Latest expenses across all groups
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {recentExpenses.length === 0 ? (
-                <p className="text-muted-foreground text-center py-4">
-                  No expenses yet. Add your first expense to a group!
-                </p>
-              ) : (
-                <div className="space-y-3">
-                  {recentExpenses.map((expense) => (
-                    <div key={expense.id} className="flex justify-between items-center p-3 border rounded-lg">
-                      <div>
-                        <h4 className="font-medium">${expense.amount.toFixed(2)}</h4>
-                        <p className="text-sm text-muted-foreground">{expense.description}</p>
-                        <p className="text-xs text-muted-foreground">{expense.group_name}</p>
-                      </div>
-                      <div className="text-sm text-muted-foreground">
-                        {new Date(expense.expense_date).toLocaleDateString()}
+                      <div className="flex items-center gap-2">
+                        {groups.map((group) => (
+                          <Button
+                            key={group.id}
+                            variant={selectedGroup.id === group.id ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => setSelectedGroup(group)}
+                          >
+                            {group.name}
+                          </Button>
+                        ))}
                       </div>
                     </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
+                    <div className="flex items-center gap-3">
+                      <CSVImportDialog 
+                        groupId={selectedGroup.id}
+                        groupMembers={groupMembers}
+                        onImportComplete={fetchGroupData}
+                      />
+                      <AddExpenseDialog 
+                        groupId={selectedGroup.id}
+                        groupMembers={groupMembers}
+                        onExpenseAdded={() => {
+                          fetchDashboardData();
+                          fetchGroupData();
+                        }}
+                      />
+                    </div>
+                  </div>
+                </CardHeader>
+              </Card>
+            )}
+
+            {/* Charts */}
+            {selectedGroup && chartData.categoryData.length > 0 && (
+              <ExpenseChart 
+                categoryData={chartData.categoryData}
+                monthlyData={chartData.monthlyData}
+                totalAmount={chartData.totalAmount}
+              />
+            )}
+
+            {/* Expenses List */}
+            {selectedGroup && (
+              <ExpensesList 
+                groupId={selectedGroup.id}
+                groupMembers={groupMembers}
+              />
+            )}
+          </>
+        )}
       </div>
     </div>
   );
-}
+};

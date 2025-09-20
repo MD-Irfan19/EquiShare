@@ -53,6 +53,8 @@ export type Database = {
           group_id: string
           id: string
           paid_by: string
+          receipt_url: string | null
+          split_method: string | null
           updated_at: string
         }
         Insert: {
@@ -64,6 +66,8 @@ export type Database = {
           group_id: string
           id?: string
           paid_by: string
+          receipt_url?: string | null
+          split_method?: string | null
           updated_at?: string
         }
         Update: {
@@ -75,6 +79,8 @@ export type Database = {
           group_id?: string
           id?: string
           paid_by?: string
+          receipt_url?: string | null
+          split_method?: string | null
           updated_at?: string
         }
         Relationships: [
