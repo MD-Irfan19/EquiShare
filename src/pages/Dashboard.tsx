@@ -11,7 +11,7 @@ import { ExpenseChart } from '@/components/dashboard/ExpenseChart';
 import { CSVImportDialog } from '@/components/import/CSVImportDialog';
 import { format, subMonths } from 'date-fns';
 
-export const Dashboard = () => {
+const Dashboard = () => {
   const { user } = useAuth();
   const [groups, setGroups] = useState<any[]>([]);
   const [selectedGroup, setSelectedGroup] = useState<any>(null);
@@ -330,3 +330,5 @@ export const Dashboard = () => {
     </div>
   );
 };
+
+export default Dashboard;
