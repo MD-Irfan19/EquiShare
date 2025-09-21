@@ -21,6 +21,7 @@ import { EXPENSE_CATEGORIES, getCategoryIcon } from '@/data/categories';
 import { SplitMethod } from '@/types/expense';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useAIExpenseCategories } from '@/hooks/useAIExpenseCategories';
 
 interface AddExpenseDialogProps {
   groupId: string;
@@ -31,6 +32,7 @@ interface AddExpenseDialogProps {
 export const AddExpenseDialog = ({ groupId, groupMembers, onExpenseAdded }: AddExpenseDialogProps) => {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const { categorizeExpense, loading: categorizingLoading } = useAIExpenseCategories();
   const [amount, setAmount] = useState('');
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState('food');
@@ -42,6 +44,22 @@ export const AddExpenseDialog = ({ groupId, groupMembers, onExpenseAdded }: AddE
   const [percentages, setPercentages] = useState<Record<string, string>>({});
   const [receipt, setReceipt] = useState<File | null>(null);
   const { toast } = useToast();
+
+  const handleDescriptionChange = async (value: string) => {
+    setDescription(value);
+    
+    // Auto-categorize when description is meaningful and category isn't already set
+    if (value.length > 3 && category === 'food') {
+      const suggestedCategory = await categorizeExpense(value, parseFloat(amount));
+      if (suggestedCategory && suggestedCategory !== 'other') {
+        setCategory(suggestedCategory);
+        toast({
+          title: 'AI Suggestion',
+          description: `Categorized as "${suggestedCategory}". You can change it if needed.`,
+        });
+      }
+    }
+  };
 
   const resetForm = () => {
     setAmount('');
@@ -221,9 +239,13 @@ export const AddExpenseDialog = ({ groupId, groupMembers, onExpenseAdded }: AddE
               id="description"
               placeholder="What was this expense for?"
               value={description}
-              onChange={(e) => setDescription(e.target.value)}
+              onChange={(e) => handleDescriptionChange(e.target.value)}
+              disabled={categorizingLoading}
               required
             />
+            {categorizingLoading && (
+              <p className="text-xs text-muted-foreground">AI is suggesting a category...</p>
+            )}
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

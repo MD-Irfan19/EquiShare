@@ -10,6 +10,8 @@ import { AddExpenseDialog } from '@/components/expenses/AddExpenseDialog';
 import { ExpensesList } from '@/components/expenses/ExpensesList';
 import { ExpenseChart } from '@/components/dashboard/ExpenseChart';
 import { CSVImportDialog } from '@/components/import/CSVImportDialog';
+import { SmartInsightsPanel } from '@/components/ai/SmartInsightsPanel';
+import { NaturalLanguageQuery } from '@/components/ai/NaturalLanguageQuery';
 import { format, subMonths } from 'date-fns';
 
 const Dashboard = () => {
@@ -316,6 +318,12 @@ const Dashboard = () => {
                 </CardHeader>
               </Card>
             )}
+
+            {/* AI Features */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+              <SmartInsightsPanel groupId={selectedGroup?.id} />
+              <NaturalLanguageQuery />
+            </div>
 
             {/* Charts */}
             {selectedGroup && chartData.categoryData.length > 0 && (
