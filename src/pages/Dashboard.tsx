@@ -100,21 +100,31 @@ export const Dashboard = () => {
     if (!selectedGroup) return;
 
     try {
+      // First get group members
       const { data: membersData, error: membersError } = await supabase
         .from('group_members')
-        .select(`
-          user_id,
-          profiles (display_name, email)
-        `)
+        .select('user_id')
         .eq('group_id', selectedGroup.id);
 
       if (membersError) throw membersError;
 
-      const members = membersData?.map(m => ({
-        user_id: m.user_id,
-        display_name: m.profiles?.display_name || 'Unknown',
-        email: m.profiles?.email,
-      })) || [];
+      // Then get their profiles
+      const userIds = membersData?.map(m => m.user_id) || [];
+      const { data: profilesData, error: profilesError } = await supabase
+        .from('profiles')
+        .select('user_id, display_name, email')
+        .in('user_id', userIds);
+
+      if (profilesError) throw profilesError;
+
+      const members = membersData?.map(m => {
+        const profile = profilesData?.find(p => p.user_id === m.user_id);
+        return {
+          user_id: m.user_id,
+          display_name: profile?.display_name || 'Unknown',
+          email: profile?.email,
+        };
+      }) || [];
 
       setGroupMembers(members);
 
