@@ -3,7 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
-import { Users, DollarSign, Receipt, TrendingUp } from 'lucide-react';
+import { Users, DollarSign, Receipt, TrendingUp, BarChart3 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { CreateGroupDialog } from '@/components/groups/CreateGroupDialog';
 import { AddExpenseDialog } from '@/components/expenses/AddExpenseDialog';
 import { ExpensesList } from '@/components/expenses/ExpensesList';
@@ -13,6 +14,7 @@ import { format, subMonths } from 'date-fns';
 
 const Dashboard = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [groups, setGroups] = useState<any[]>([]);
   const [selectedGroup, setSelectedGroup] = useState<any>(null);
   const [groupMembers, setGroupMembers] = useState<any[]>([]);
@@ -193,6 +195,13 @@ const Dashboard = () => {
             </p>
           </div>
           <div className="flex items-center gap-3">
+            <Button 
+              onClick={() => navigate('/analytics')}
+              variant="outline"
+            >
+              <BarChart3 className="h-4 w-4 mr-2" />
+              Analytics
+            </Button>
             <CreateGroupDialog onGroupCreated={fetchDashboardData} />
             <Button 
               onClick={() => supabase.auth.signOut()}
