@@ -69,7 +69,8 @@ export const ExpensesList = ({ groupId, groupMembers }: ExpensesListProps) => {
 
   useEffect(() => {
     fetchExpenses();
-  }, [groupId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [groupId, groupMembers]);
 
   const filteredExpenses = expenses.filter(expense => {
     const matchesSearch = expense.description.toLowerCase().includes(searchTerm.toLowerCase()) ||

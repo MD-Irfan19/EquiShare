@@ -44,6 +44,7 @@ export const SmartInsightsPanel = ({ groupId }: SmartInsightsPanelProps) => {
 
   useEffect(() => {
     fetchInsights();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [groupId, timeRange]);
 
   return (

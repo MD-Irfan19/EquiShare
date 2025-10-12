@@ -124,8 +124,9 @@ const Dashboard = () => {
       const members = membersData?.map(m => {
         const profile = profilesData?.find(p => p.user_id === m.user_id);
         return {
+          id: m.user_id,
           user_id: m.user_id,
-          display_name: profile?.display_name || 'Unknown',
+          display_name: profile?.display_name || profile?.email || 'Unknown',
           email: profile?.email,
         };
       }) || [];

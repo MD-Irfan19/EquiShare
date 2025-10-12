@@ -48,10 +48,10 @@ export const AddExpenseDialog = ({ groupId, groupMembers, onExpenseAdded }: AddE
   const handleDescriptionChange = async (value: string) => {
     setDescription(value);
     
-    // Auto-categorize when description is meaningful and category isn't already set
-    if (value.length > 3 && category === 'food') {
+    // Auto-categorize when description is meaningful (only on first meaningful input)
+    if (value.length > 5 && !value.includes('\n')) {
       const suggestedCategory = await categorizeExpense(value, parseFloat(amount));
-      if (suggestedCategory && suggestedCategory !== 'other') {
+      if (suggestedCategory && suggestedCategory !== category) {
         setCategory(suggestedCategory);
         toast({
           title: 'AI Suggestion',
