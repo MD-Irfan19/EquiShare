@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
-import { Users, DollarSign, Receipt, TrendingUp, BarChart3 } from 'lucide-react';
+import { Users, DollarSign, Receipt, TrendingUp, BarChart3, HandCoins } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { CreateGroupDialog } from '@/components/groups/CreateGroupDialog';
 import { AddExpenseDialog } from '@/components/expenses/AddExpenseDialog';
@@ -301,6 +301,14 @@ const Dashboard = () => {
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => navigate(`/settlements/${selectedGroup.id}`)}
+                      >
+                        <HandCoins className="h-4 w-4 mr-2" />
+                        Settle Up
+                      </Button>
                       <CSVImportDialog 
                         groupId={selectedGroup.id}
                         groupMembers={groupMembers}

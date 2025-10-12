@@ -185,6 +185,56 @@ export type Database = {
         }
         Relationships: []
       }
+      settlements: {
+        Row: {
+          amount: number
+          created_at: string
+          currency: string
+          from_user_id: string
+          group_id: string
+          id: string
+          notes: string | null
+          settled_at: string | null
+          status: string
+          to_user_id: string
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          currency?: string
+          from_user_id: string
+          group_id: string
+          id?: string
+          notes?: string | null
+          settled_at?: string | null
+          status?: string
+          to_user_id: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          from_user_id?: string
+          group_id?: string
+          id?: string
+          notes?: string | null
+          settled_at?: string | null
+          status?: string
+          to_user_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "settlements_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
