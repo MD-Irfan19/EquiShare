@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
-import { Users, DollarSign, Receipt, TrendingUp, BarChart3, HandCoins } from 'lucide-react';
+import { Users, DollarSign, Receipt, TrendingUp, BarChart3, HandCoins, Copy, Check } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { CreateGroupDialog } from '@/components/groups/CreateGroupDialog';
 import { JoinGroupDialog } from '@/components/groups/JoinGroupDialog';
@@ -14,6 +14,51 @@ import { CSVImportDialog } from '@/components/import/CSVImportDialog';
 import { SmartInsightsPanel } from '@/components/ai/SmartInsightsPanel';
 import { NaturalLanguageQuery } from '@/components/ai/NaturalLanguageQuery';
 import { format, subMonths } from 'date-fns';
+import { useToast } from '@/hooks/use-toast';
+
+const CopyGroupCode = ({ groupCode }: { groupCode: string }) => {
+  const [copied, setCopied] = useState(false);
+  const { toast } = useToast();
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(groupCode);
+      setCopied(true);
+      toast({
+        title: "Code copied!",
+        description: `Group code ${groupCode} copied to clipboard`,
+      });
+      setTimeout(() => setCopied(false), 2000);
+    } catch (error) {
+      toast({
+        title: "Failed to copy",
+        description: "Could not copy code to clipboard",
+        variant: "destructive",
+      });
+    }
+  };
+
+  return (
+    <Button
+      variant="outline"
+      size="sm"
+      onClick={handleCopy}
+      className="h-7 gap-2 font-mono text-xs"
+    >
+      {copied ? (
+        <>
+          <Check className="h-3 w-3" />
+          Copied
+        </>
+      ) : (
+        <>
+          <Copy className="h-3 w-3" />
+          {groupCode}
+        </>
+      )}
+    </Button>
+  );
+};
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -47,6 +92,7 @@ const Dashboard = () => {
             name,
             description,
             currency,
+            group_code,
             created_at
           )
         `)
@@ -287,7 +333,12 @@ const Dashboard = () => {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
                       <div>
-                        <CardTitle>{selectedGroup.name}</CardTitle>
+                        <div className="flex items-center gap-2">
+                          <CardTitle>{selectedGroup.name}</CardTitle>
+                          {selectedGroup.group_code && (
+                            <CopyGroupCode groupCode={selectedGroup.group_code} />
+                          )}
+                        </div>
                         {selectedGroup.description && (
                           <p className="text-sm text-muted-foreground mt-1">{selectedGroup.description}</p>
                         )}
