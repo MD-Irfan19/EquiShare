@@ -68,7 +68,6 @@ export const CreateGroupDialog = ({ onGroupCreated }: CreateGroupDialogProps) =>
           description: description.trim() || null,
           currency,
           created_by: user!.id,
-          group_code: '', // Will be overridden by database trigger
         }])
         .select()
         .single();
