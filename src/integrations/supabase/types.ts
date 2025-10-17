@@ -131,7 +131,7 @@ export type Database = {
           created_by: string
           currency: string
           description: string | null
-          group_code: string
+          group_code: string | null
           id: string
           name: string
           updated_at: string
@@ -141,7 +141,7 @@ export type Database = {
           created_by: string
           currency?: string
           description?: string | null
-          group_code: string
+          group_code?: string | null
           id?: string
           name: string
           updated_at?: string
@@ -151,7 +151,7 @@ export type Database = {
           created_by?: string
           currency?: string
           description?: string | null
-          group_code?: string
+          group_code?: string | null
           id?: string
           name?: string
           updated_at?: string
