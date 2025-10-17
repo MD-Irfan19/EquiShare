@@ -6,6 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Users, DollarSign, Receipt, TrendingUp, BarChart3, HandCoins } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { CreateGroupDialog } from '@/components/groups/CreateGroupDialog';
+import { JoinGroupDialog } from '@/components/groups/JoinGroupDialog';
 import { AddExpenseDialog } from '@/components/expenses/AddExpenseDialog';
 import { ExpensesList } from '@/components/expenses/ExpensesList';
 import { ExpenseChart } from '@/components/dashboard/ExpenseChart';
@@ -206,6 +207,7 @@ const Dashboard = () => {
               Analytics
             </Button>
             <CreateGroupDialog onGroupCreated={fetchDashboardData} />
+            <JoinGroupDialog onGroupJoined={fetchDashboardData} />
             <Button 
               onClick={() => supabase.auth.signOut()}
               variant="outline"
@@ -221,9 +223,12 @@ const Dashboard = () => {
               <Users className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
               <h3 className="text-xl font-semibold mb-2">No Groups Yet</h3>
               <p className="text-muted-foreground mb-6">
-                Create your first group to start tracking shared expenses
+                Create your first group to start tracking shared expenses or join an existing one
               </p>
-              <CreateGroupDialog onGroupCreated={fetchDashboardData} />
+              <div className="flex gap-3 justify-center">
+                <CreateGroupDialog onGroupCreated={fetchDashboardData} />
+                <JoinGroupDialog onGroupJoined={fetchDashboardData} />
+              </div>
             </CardContent>
           </Card>
         ) : (
