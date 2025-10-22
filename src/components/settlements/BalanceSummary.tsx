@@ -9,7 +9,7 @@ interface BalanceSummaryProps {
   currency?: string;
 }
 
-export function BalanceSummary({ balances, currency = 'INR' }: BalanceSummaryProps) {
+export function BalanceSummary({ balances, currency = 'USD' }: BalanceSummaryProps) {
   const userBalance = balances.find(b => b.amount !== 0);
   const totalOwed = balances.filter(b => b.amount < 0).reduce((sum, b) => sum + Math.abs(b.amount), 0);
   const totalOwedTo = balances.filter(b => b.amount > 0).reduce((sum, b) => sum + b.amount, 0);

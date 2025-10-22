@@ -19,7 +19,7 @@ export default function Settlements() {
   const [balances, setBalances] = useState<Balance[]>([]);
   const [settlements, setSettlements] = useState<Settlement[]>([]);
   const [profiles, setProfiles] = useState<Array<{ user_id: string; display_name?: string; email?: string }>>([]);
-  const [groupCurrency, setGroupCurrency] = useState('INR');
+  const [groupCurrency, setGroupCurrency] = useState('USD');
   const [loading, setLoading] = useState(true);
   const [selectedSettlement, setSelectedSettlement] = useState<Settlement | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
