@@ -128,8 +128,8 @@ serve(async (req) => {
       totalAmount: totalAmount.toFixed(2),
       expenseCount: expenses.length,
       avgAmount: avgAmount.toFixed(2),
-      topCategory: topCategory ? `${topCategory[0]} ($${topCategory[1].toFixed(2)})` : 'N/A',
-      memberAnalysis: memberAnalysis.map(m => `${m.name}: $${m.amount.toFixed(2)} (${m.percentage.toFixed(1)}%)`),
+      topCategory: topCategory ? `${topCategory[0]} (₹${topCategory[1].toFixed(2)})` : 'N/A',
+      memberAnalysis: memberAnalysis.map(m => `${m.name}: ₹${m.amount.toFixed(2)} (${m.percentage.toFixed(1)}%)`),
       weeklyTrend: weeklyChange > 0 ? `up ${weeklyChange.toFixed(1)}%` : `down ${Math.abs(weeklyChange).toFixed(1)}%`,
       timeRange: `${daysBack} days`
     };
@@ -155,8 +155,8 @@ serve(async (req) => {
           {
             role: 'user',
             content: `Analyze this expense data for the last ${contextData.timeRange}:
-            - Total spent: $${contextData.totalAmount} across ${contextData.expenseCount} expenses
-            - Average per expense: $${contextData.avgAmount}
+            - Total spent: ₹${contextData.totalAmount} across ${contextData.expenseCount} expenses
+            - Average per expense: ₹${contextData.avgAmount}
             - Top category: ${contextData.topCategory}
             - Member contributions: ${contextData.memberAnalysis.join(', ')}
             - Weekly trend: ${contextData.weeklyTrend}
@@ -173,7 +173,7 @@ serve(async (req) => {
       console.error('OpenAI API error:', await response.text());
       return new Response(JSON.stringify({ 
         insights: [
-          `Total spending: $${contextData.totalAmount} over ${contextData.expenseCount} expenses`,
+          `Total spending: ₹${contextData.totalAmount} over ${contextData.expenseCount} expenses`,
           `Top category: ${contextData.topCategory}`,
           `Weekly trend: ${contextData.weeklyTrend}`
         ]
@@ -193,7 +193,7 @@ serve(async (req) => {
     } catch {
       // Fallback to manual insights
       insights = [
-        `Total spending: $${contextData.totalAmount} over ${contextData.expenseCount} expenses`,
+        `Total spending: ₹${contextData.totalAmount} over ${contextData.expenseCount} expenses`,
         `Top spending category: ${contextData.topCategory}`,
         `Weekly spending trend: ${contextData.weeklyTrend}`,
         memberAnalysis.length > 1 
