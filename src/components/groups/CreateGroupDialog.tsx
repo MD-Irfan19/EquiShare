@@ -37,14 +37,14 @@ export const CreateGroupDialog = ({ onGroupCreated }: CreateGroupDialogProps) =>
   const [loading, setLoading] = useState(false);
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
-  const [currency, setCurrency] = useState('USD');
+  const [currency, setCurrency] = useState('INR');
   const { user } = useAuth();
   const { toast } = useToast();
 
   const resetForm = () => {
     setName('');
     setDescription('');
-    setCurrency('USD');
+    setCurrency('INR');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
