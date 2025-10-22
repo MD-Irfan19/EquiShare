@@ -243,10 +243,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      generate_group_code: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
+      generate_group_code: { Args: never; Returns: string }
     }
     Enums: {
       [_ in never]: never
