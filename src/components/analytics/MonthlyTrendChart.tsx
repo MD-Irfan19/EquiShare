@@ -16,7 +16,7 @@ export const MonthlyTrendChart = ({ data }: MonthlyTrendChartProps) => {
       return (
         <div className="bg-background border rounded-lg p-3 shadow-lg">
           <p className="font-medium">{label}</p>
-          <p className="text-primary">Amount: ${payload[0].value.toFixed(2)}</p>
+          <p className="text-primary">Amount: ₹{payload[0].value.toFixed(2)}</p>
         </div>
       );
     }
@@ -32,7 +32,7 @@ export const MonthlyTrendChart = ({ data }: MonthlyTrendChartProps) => {
         <CardTitle className="flex items-center justify-between">
           Monthly Spending Trend
           <div className="text-sm font-normal text-muted-foreground">
-            Avg: ${avgAmount.toFixed(2)} | Peak: ${maxAmount.toFixed(2)}
+            Avg: ₹{avgAmount.toFixed(2)} | Peak: ₹{maxAmount.toFixed(2)}
           </div>
         </CardTitle>
       </CardHeader>
@@ -55,7 +55,7 @@ export const MonthlyTrendChart = ({ data }: MonthlyTrendChartProps) => {
               <YAxis 
                 stroke="hsl(var(--muted-foreground))"
                 fontSize={12}
-                tickFormatter={(value) => `$${value.toFixed(0)}`}
+                tickFormatter={(value) => `₹${value.toFixed(0)}`}
               />
               <Tooltip content={<CustomTooltip />} />
               <Area

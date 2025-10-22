@@ -121,7 +121,7 @@ export const NaturalLanguageQuery = () => {
                   <div className="text-muted-foreground">Expenses</div>
                 </div>
                 <div className="bg-primary/10 p-2 rounded text-center">
-                  <div className="font-medium">${result.summary.totalAmount}</div>
+                  <div className="font-medium">₹{result.summary.totalAmount}</div>
                   <div className="text-muted-foreground">Total</div>
                 </div>
                 <div className="bg-primary/10 p-2 rounded text-center">
@@ -147,7 +147,7 @@ export const NaturalLanguageQuery = () => {
                     <div key={index} className="text-xs bg-background p-2 rounded flex justify-between">
                       <span>
                         {item.category || item.member || item.description || 'Item'}: 
-                        {item.amount && ` $${Number(item.amount).toFixed(2)}`}
+                        {item.amount && ` ₹${Number(item.amount).toFixed(2)}`}
                       </span>
                       {item.percentage && (
                         <span className="text-muted-foreground">{item.percentage}%</span>

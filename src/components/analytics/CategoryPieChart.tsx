@@ -28,7 +28,7 @@ export const CategoryPieChart = ({ data }: CategoryPieChartProps) => {
       return (
         <div className="bg-background border rounded-lg p-3 shadow-lg">
           <p className="font-medium">{data.name}</p>
-          <p className="text-primary">Amount: ${data.amount.toFixed(2)}</p>
+          <p className="text-primary">Amount: ₹{data.amount.toFixed(2)}</p>
           <p className="text-muted-foreground text-sm">{data.count} expenses</p>
           <p className="text-muted-foreground text-sm">
             {((data.amount / chartData.reduce((sum, item) => sum + item.amount, 0)) * 100).toFixed(1)}% of total
@@ -67,7 +67,7 @@ export const CategoryPieChart = ({ data }: CategoryPieChartProps) => {
               <Legend 
                 verticalAlign="bottom" 
                 height={36}
-                formatter={(value, entry: any) => `${value} ($${entry.payload.amount.toFixed(2)})`}
+                formatter={(value, entry: any) => `${value} (₹${entry.payload.amount.toFixed(2)})`}
               />
             </PieChart>
           </ResponsiveContainer>

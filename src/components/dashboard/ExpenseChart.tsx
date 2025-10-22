@@ -34,7 +34,7 @@ export const ExpenseChart = ({ categoryData, monthlyData, totalAmount }: Expense
         <div className="bg-background border rounded-lg p-3 shadow-lg">
           <p className="font-medium">{label}</p>
           <p className="text-primary">
-            Amount: ${payload[0].value.toFixed(2)}
+            Amount: ₹{payload[0].value.toFixed(2)}
           </p>
           {payload[0].payload.count && (
             <p className="text-muted-foreground text-sm">

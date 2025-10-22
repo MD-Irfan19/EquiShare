@@ -105,11 +105,11 @@ export const SpendingHeatmap = ({ data }: SpendingHeatmapProps) => {
                           backgroundColor: day.isCurrentMonth ? getCellColor(day.amount) : 'transparent',
                           opacity: day.isCurrentMonth ? 1 : 0.3
                         }}
-                        title={`${day.date}: $${day.amount.toFixed(2)}`}
+                        title={`${day.date}: ₹${day.amount.toFixed(2)}`}
                       >
                         {/* Tooltip content */}
                         <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10">
-                          {day.date}: ${day.amount.toFixed(2)}
+                          {day.date}: ₹{day.amount.toFixed(2)}
                         </div>
                       </div>
                     ));

@@ -211,7 +211,7 @@ export const ExpensesList = ({ groupId, groupMembers }: ExpensesListProps) => {
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className="text-lg font-semibold">${expense.amount.toFixed(2)}</div>
+                      <div className="text-lg font-semibold">₹{expense.amount.toFixed(2)}</div>
                       <div className="text-sm text-muted-foreground capitalize">
                         {expense.split_method} split
                       </div>

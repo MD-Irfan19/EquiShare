@@ -19,10 +19,10 @@ export const MemberContributionChart = ({ data }: MemberContributionChartProps) 
       return (
         <div className="bg-background border rounded-lg p-3 shadow-lg">
           <p className="font-medium">{memberData.name}</p>
-          <p className="text-primary">Total: ${memberData.amount.toFixed(2)}</p>
+          <p className="text-primary">Total: ₹{memberData.amount.toFixed(2)}</p>
           <p className="text-muted-foreground text-sm">{memberData.count} expenses</p>
           <p className="text-muted-foreground text-sm">
-            Avg: ${(memberData.amount / memberData.count).toFixed(2)} per expense
+            Avg: ₹{(memberData.amount / memberData.count).toFixed(2)} per expense
           </p>
         </div>
       );
@@ -55,7 +55,7 @@ export const MemberContributionChart = ({ data }: MemberContributionChartProps) 
                 type="number"
                 stroke="hsl(var(--muted-foreground))"
                 fontSize={12}
-                tickFormatter={(value) => `$${value.toFixed(0)}`}
+                tickFormatter={(value) => `₹${value.toFixed(0)}`}
               />
               <YAxis 
                 type="category"
