@@ -283,7 +283,7 @@ export default function Analytics() {
               <TrendingUp className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">${analyticsData.totalAmount.toFixed(2)}</div>
+              <div className="text-2xl font-bold">₹{analyticsData.totalAmount.toFixed(2)}</div>
               <p className="text-xs text-muted-foreground">
                 {analyticsData.totalExpenses} expenses
               </p>
@@ -296,7 +296,7 @@ export default function Analytics() {
               <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">${analyticsData.avgPerMember.toFixed(2)}</div>
+              <div className="text-2xl font-bold">₹{analyticsData.avgPerMember.toFixed(2)}</div>
               <p className="text-xs text-muted-foreground">
                 {analyticsData.memberData.length} active members
               </p>
@@ -313,7 +313,7 @@ export default function Analytics() {
                 {analyticsData.categoryData[0]?.category || 'None'}
               </div>
               <p className="text-xs text-muted-foreground">
-                ${analyticsData.categoryData[0]?.amount.toFixed(2) || '0.00'}
+                ₹{analyticsData.categoryData[0]?.amount.toFixed(2) || '0.00'}
               </p>
             </CardContent>
           </Card>
