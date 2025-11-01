@@ -6,8 +6,9 @@ import { BalanceSummary } from '@/components/settlements/BalanceSummary';
 import { SettlementsList } from '@/components/settlements/SettlementsList';
 import { SettlementHistory } from '@/components/settlements/SettlementHistory';
 import { SettleUpDialog } from '@/components/settlements/SettleUpDialog';
+import { AddBalanceDialog } from '@/components/settlements/AddBalanceDialog';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, RefreshCw } from 'lucide-react';
+import { ArrowLeft, RefreshCw, Plus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 
@@ -23,6 +24,7 @@ export default function Settlements() {
   const [loading, setLoading] = useState(true);
   const [selectedSettlement, setSelectedSettlement] = useState<Settlement | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [addBalanceOpen, setAddBalanceOpen] = useState(false);
 
   useEffect(() => {
     if (groupId) {
@@ -143,10 +145,16 @@ export default function Settlements() {
             <p className="text-muted-foreground">Manage group balances and payments</p>
           </div>
         </div>
-        <Button variant="outline" onClick={calculateSettlements}>
-          <RefreshCw className="h-4 w-4 mr-2" />
-          Refresh
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={calculateSettlements}>
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Refresh
+          </Button>
+          <Button onClick={() => setAddBalanceOpen(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            Add Balance
+          </Button>
+        </div>
       </div>
 
       <BalanceSummary balances={balances} currency={groupCurrency} />
@@ -170,6 +178,15 @@ export default function Settlements() {
         groupId={groupId!}
         currency={groupCurrency}
         onSettled={handleSettled}
+      />
+
+      <AddBalanceDialog
+        open={addBalanceOpen}
+        onOpenChange={setAddBalanceOpen}
+        groupId={groupId!}
+        currency={groupCurrency}
+        members={profiles}
+        onBalanceAdded={handleSettled}
       />
     </div>
   );
