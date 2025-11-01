@@ -114,9 +114,9 @@ serve(async (req) => {
       ? ((lastWeekly - avgWeekly) / avgWeekly) * 100 
       : 0;
 
-    // Generate insights using AI
-    const openaiApiKey = Deno.env.get('OPENAI_API_KEY');
-    if (!openaiApiKey) {
+    // Generate insights using Lovable AI
+    const lovableApiKey = Deno.env.get('LOVABLE_API_KEY');
+    if (!lovableApiKey) {
       return new Response(JSON.stringify({ 
         insights: ["AI insights unavailable - API key not configured"] 
       }), {
@@ -134,14 +134,14 @@ serve(async (req) => {
       timeRange: `${daysBack} days`
     };
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${openaiApiKey}`,
+        'Authorization': `Bearer ${lovableApiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'google/gemini-2.5-flash',
         messages: [
           {
             role: 'system',
@@ -164,13 +164,14 @@ serve(async (req) => {
             Provide specific, actionable insights.`
           }
         ],
-        temperature: 0.7,
         max_tokens: 400,
       }),
     });
 
     if (!response.ok) {
-      console.error('OpenAI API error:', await response.text());
+      const errorText = await response.text();
+      console.error('Lovable AI API error:', response.status, errorText);
+      
       return new Response(JSON.stringify({ 
         insights: [
           `Total spending: ₹${contextData.totalAmount} over ${contextData.expenseCount} expenses`,

@@ -24,19 +24,19 @@ serve(async (req) => {
       throw new Error('Description is required');
     }
 
-    const openaiApiKey = Deno.env.get('OPENAI_API_KEY');
-    if (!openaiApiKey) {
-      throw new Error('OpenAI API key not configured');
+    const lovableApiKey = Deno.env.get('LOVABLE_API_KEY');
+    if (!lovableApiKey) {
+      throw new Error('Lovable API key not configured');
     }
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${openaiApiKey}`,
+        'Authorization': `Bearer ${lovableApiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'google/gemini-2.5-flash',
         messages: [
           {
             role: 'system',
@@ -51,17 +51,24 @@ serve(async (req) => {
           },
           {
             role: 'user',
-            content: `Description: "${description}"${amount ? `, Amount: $${amount}` : ''}`
+            content: `Description: "${description}"${amount ? `, Amount: ₹${amount}` : ''}`
           }
         ],
-        temperature: 0.1,
         max_tokens: 10,
       }),
     });
 
     if (!response.ok) {
-      const error = await response.json();
-      throw new Error(`OpenAI API error: ${error.error?.message || 'Unknown error'}`);
+      const errorText = await response.text();
+      console.error('Lovable AI API error:', response.status, errorText);
+      
+      if (response.status === 429) {
+        throw new Error('Rate limit exceeded. Please try again later.');
+      }
+      if (response.status === 402) {
+        throw new Error('Payment required. Please add credits to your Lovable workspace.');
+      }
+      throw new Error(`AI API error: ${errorText}`);
     }
 
     const data = await response.json();

@@ -80,9 +80,9 @@ serve(async (req) => {
       description: e.description
     })) || [];
 
-    const openaiApiKey = Deno.env.get('OPENAI_API_KEY');
-    if (!openaiApiKey) {
-      throw new Error('OpenAI API key not configured');
+    const lovableApiKey = Deno.env.get('LOVABLE_API_KEY');
+    if (!lovableApiKey) {
+      throw new Error('Lovable API key not configured');
     }
 
     // Create summary statistics for context
@@ -102,44 +102,51 @@ serve(async (req) => {
     }, {} as Record<string, number>);
 
     // Use AI to interpret the query and generate response
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${openaiApiKey}`,
+        'Authorization': `Bearer ${lovableApiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'google/gemini-2.5-flash',
         messages: [
           {
             role: 'system',
             content: `You are a financial assistant analyzing expense data. Answer user questions about their expenses with specific numbers and insights.
 
             Available data context:
-            - Total expenses: $${totalAmount.toFixed(2)} across ${processedExpenses.length} transactions
+            - Total expenses: ₹${totalAmount.toFixed(2)} across ${processedExpenses.length} transactions
             - Categories: ${categories.join(', ')}
             - Members: ${members.join(', ')}  
             - Groups: ${groups.join(', ')}
             - Date range: ${processedExpenses.length > 0 ? `${processedExpenses[processedExpenses.length - 1].date} to ${processedExpenses[0].date}` : 'No data'}
 
-            Category totals: ${Object.entries(categoryTotals).map(([cat, amount]) => `${cat}: $${amount.toFixed(2)}`).join(', ')}
-            Member totals: ${Object.entries(memberTotals).map(([member, amount]) => `${member}: $${amount.toFixed(2)}`).join(', ')}
+            Category totals: ${Object.entries(categoryTotals).map(([cat, amount]) => `${cat}: ₹${amount.toFixed(2)}`).join(', ')}
+            Member totals: ${Object.entries(memberTotals).map(([member, amount]) => `${member}: ₹${amount.toFixed(2)}`).join(', ')}
 
-            Answer questions naturally and include specific dollar amounts and percentages when relevant. If the query asks for something not available in the data, explain what data is available instead.`
+            Answer questions naturally and include specific rupee amounts and percentages when relevant. If the query asks for something not available in the data, explain what data is available instead.`
           },
           {
             role: 'user',
             content: query
           }
         ],
-        temperature: 0.3,
         max_tokens: 500,
       }),
     });
 
     if (!response.ok) {
-      const error = await response.json();
-      throw new Error(`OpenAI API error: ${error.error?.message || 'Unknown error'}`);
+      const errorText = await response.text();
+      console.error('Lovable AI API error:', response.status, errorText);
+      
+      if (response.status === 429) {
+        throw new Error('Rate limit exceeded. Please try again later.');
+      }
+      if (response.status === 402) {
+        throw new Error('Payment required. Please add credits to your Lovable workspace.');
+      }
+      throw new Error(`AI API error: ${errorText}`);
     }
 
     const aiData = await response.json();
