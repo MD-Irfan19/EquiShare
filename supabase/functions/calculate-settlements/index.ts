@@ -87,6 +87,15 @@ serve(async (req) => {
 
     if (participantsError) throw participantsError;
 
+    // Get all settled settlements for the group
+    const { data: settledSettlements, error: settlementsError } = await supabase
+      .from('settlements')
+      .select('from_user_id, to_user_id, amount')
+      .eq('group_id', groupId)
+      .eq('status', 'settled');
+
+    if (settlementsError) throw settlementsError;
+
     // Calculate net balance for each user
     const balances = new Map<string, number>();
 
@@ -100,6 +109,17 @@ serve(async (req) => {
     participants?.forEach(participant => {
       const current = balances.get(participant.user_id) || 0;
       balances.set(participant.user_id, current - parseFloat(participant.amount_owed));
+    });
+
+    // Adjust balances for already settled amounts
+    settledSettlements?.forEach(settlement => {
+      // The person who paid (from_user_id) gets credited back
+      const fromCurrent = balances.get(settlement.from_user_id) || 0;
+      balances.set(settlement.from_user_id, fromCurrent + parseFloat(settlement.amount));
+      
+      // The person who received (to_user_id) gets debited
+      const toCurrent = balances.get(settlement.to_user_id) || 0;
+      balances.set(settlement.to_user_id, toCurrent - parseFloat(settlement.amount));
     });
 
     // Convert to array format
