@@ -3,6 +3,8 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Balance } from '@/types/settlement';
 import { ArrowUp, ArrowDown, DollarSign } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 
 interface BalanceSummaryProps {
   balances: Balance[];
@@ -10,9 +12,21 @@ interface BalanceSummaryProps {
 }
 
 export function BalanceSummary({ balances, currency = 'USD' }: BalanceSummaryProps) {
-  const userBalance = balances.find(b => b.amount !== 0);
-  const totalOwed = balances.filter(b => b.amount < 0).reduce((sum, b) => sum + Math.abs(b.amount), 0);
-  const totalOwedTo = balances.filter(b => b.amount > 0).reduce((sum, b) => sum + b.amount, 0);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setCurrentUserId(user?.id || null);
+    });
+  }, []);
+
+  const userBalance = balances.find(b => b.userId === currentUserId);
+  const myBalance = userBalance?.amount || 0;
+  
+  // If my balance is negative, I owe money
+  const totalOwed = myBalance < 0 ? Math.abs(myBalance) : 0;
+  // If my balance is positive, people owe me money
+  const totalOwedTo = myBalance > 0 ? myBalance : 0;
 
   return (
     <div className="grid gap-4 md:grid-cols-3">
@@ -23,10 +37,10 @@ export function BalanceSummary({ balances, currency = 'USD' }: BalanceSummaryPro
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">
-            {currency} {Math.abs(userBalance?.amount || 0).toFixed(2)}
+            {currency} {Math.abs(myBalance).toFixed(2)}
           </div>
-          <Badge variant={userBalance && userBalance.amount < 0 ? 'destructive' : 'default'} className="mt-2">
-            {userBalance && userBalance.amount < 0 ? 'You Owe' : userBalance && userBalance.amount > 0 ? 'You Are Owed' : 'Settled Up'}
+          <Badge variant={myBalance < 0 ? 'destructive' : myBalance > 0 ? 'default' : 'secondary'} className="mt-2">
+            {myBalance < 0 ? 'You Owe' : myBalance > 0 ? 'You Are Owed' : 'Settled Up'}
           </Badge>
         </CardContent>
       </Card>
@@ -41,7 +55,7 @@ export function BalanceSummary({ balances, currency = 'USD' }: BalanceSummaryPro
             {currency} {totalOwed.toFixed(2)}
           </div>
           <p className="text-xs text-muted-foreground mt-2">
-            To {balances.filter(b => b.amount > 0).length} {balances.filter(b => b.amount > 0).length === 1 ? 'person' : 'people'}
+            {totalOwed > 0 ? 'Amount you need to pay' : 'You don\'t owe anything'}
           </p>
         </CardContent>
       </Card>
@@ -56,7 +70,7 @@ export function BalanceSummary({ balances, currency = 'USD' }: BalanceSummaryPro
             {currency} {totalOwedTo.toFixed(2)}
           </div>
           <p className="text-xs text-muted-foreground mt-2">
-            From {balances.filter(b => b.amount < 0).length} {balances.filter(b => b.amount < 0).length === 1 ? 'person' : 'people'}
+            {totalOwedTo > 0 ? 'Amount others owe you' : 'No one owes you'}
           </p>
         </CardContent>
       </Card>
