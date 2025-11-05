@@ -165,6 +165,11 @@ export type Database = {
           display_name: string | null
           email: string | null
           id: string
+          language: string | null
+          notifications_enabled: boolean | null
+          phone: string | null
+          preferred_currency: string | null
+          theme_mode: string | null
           updated_at: string
           user_id: string
         }
@@ -174,6 +179,11 @@ export type Database = {
           display_name?: string | null
           email?: string | null
           id?: string
+          language?: string | null
+          notifications_enabled?: boolean | null
+          phone?: string | null
+          preferred_currency?: string | null
+          theme_mode?: string | null
           updated_at?: string
           user_id: string
         }
@@ -183,6 +193,11 @@ export type Database = {
           display_name?: string | null
           email?: string | null
           id?: string
+          language?: string | null
+          notifications_enabled?: boolean | null
+          phone?: string | null
+          preferred_currency?: string | null
+          theme_mode?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -243,10 +258,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      generate_group_code: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
+      generate_group_code: { Args: never; Returns: string }
     }
     Enums: {
       [_ in never]: never
