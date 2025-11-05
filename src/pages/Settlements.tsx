@@ -28,10 +28,14 @@ export default function Settlements() {
 
   useEffect(() => {
     if (groupId) {
-      fetchGroupData();
-      calculateSettlements();
+      loadData();
     }
   }, [groupId]);
+
+  const loadData = async () => {
+    await fetchGroupData();
+    await calculateSettlements();
+  };
 
   const fetchGroupData = async () => {
     try {
@@ -69,16 +73,30 @@ export default function Settlements() {
   };
 
   const calculateSettlements = async () => {
+    if (!groupId || groupId === ':groupId') {
+      console.error('Invalid groupId:', groupId);
+      return;
+    }
+
     setLoading(true);
     try {
       const { data: session } = await supabase.auth.getSession();
       if (!session.session) throw new Error('Not authenticated');
 
+      console.log('Calling calculate-settlements with groupId:', groupId);
+
       const response = await supabase.functions.invoke('calculate-settlements', {
-        body: { groupId },
+        body: { groupId: groupId },
       });
 
-      if (response.error) throw response.error;
+      if (response.error) {
+        console.error('Function error:', response.error);
+        throw response.error;
+      }
+
+      if (!response.data) {
+        throw new Error('No data returned from function');
+      }
 
       const { balances: calculatedBalances, settlements: calculatedSettlements } = response.data;
 
@@ -108,7 +126,7 @@ export default function Settlements() {
       console.error('Error calculating settlements:', error);
       toast({
         title: 'Error',
-        description: 'Failed to calculate settlements',
+        description: error.message || 'Failed to calculate settlements',
         variant: 'destructive',
       });
     } finally {
