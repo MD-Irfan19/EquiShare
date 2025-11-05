@@ -67,7 +67,7 @@ const Profile = () => {
     email: '',
     phone: '',
     avatar_url: '',
-    preferred_currency: 'USD',
+    preferred_currency: 'INR',
     language: 'en',
     theme_mode: 'light',
     notifications_enabled: true,
