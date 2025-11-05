@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
-import { Users, DollarSign, Receipt, TrendingUp, BarChart3, HandCoins, Copy, Check } from 'lucide-react';
+import { Users, DollarSign, Receipt, TrendingUp, BarChart3, HandCoins, Copy, Check, UserCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { CreateGroupDialog } from '@/components/groups/CreateGroupDialog';
 import { JoinGroupDialog } from '@/components/groups/JoinGroupDialog';
@@ -251,6 +251,13 @@ const Dashboard = () => {
             >
               <BarChart3 className="h-4 w-4 mr-2" />
               Analytics
+            </Button>
+            <Button 
+              onClick={() => navigate('/profile')}
+              variant="outline"
+            >
+              <UserCircle className="h-4 w-4 mr-2" />
+              My Profile
             </Button>
             <CreateGroupDialog onGroupCreated={fetchDashboardData} />
             <JoinGroupDialog onGroupJoined={fetchDashboardData} />
