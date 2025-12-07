@@ -34,7 +34,7 @@ const Index = () => {
       {/* Hero Section */}
       <section className="container mx-auto px-4 py-16 text-center">
         <h1 className="text-4xl md:text-6xl font-bold mb-6">
-          Smart Expense Sharing
+          Smart Group Expense Sharing
           <span className="block text-primary">Made Simple</span>
         </h1>
         <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
@@ -88,7 +88,7 @@ const Index = () => {
       {/* Footer */}
       <footer className="border-t bg-card">
         <div className="container mx-auto px-4 py-8 text-center text-muted-foreground">
-          <p>&copy; 2024 EquiShare. All rights reserved.</p>
+          <p>&copy; 2025 EquiShare. All rights reserved.</p>
         </div>
       </footer>
     </div>
